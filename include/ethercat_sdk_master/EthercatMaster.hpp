@@ -86,7 +86,7 @@ public:
   /*!
    * Pre shutdown communication.
    * Call preShutdown() of every attached device.
-   * This function needs to be executed outside of the communicatino update thread.
+   * This function needs to be executed outside of the communication update thread.
    * PDO communication needs to continue until this funtion returns.
    * @see https://bitbucket.org/leggedrobotics/ethercat_device_configurator/src/master/src/standalone.cpp
    */

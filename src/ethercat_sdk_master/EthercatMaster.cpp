@@ -43,7 +43,7 @@ void EthercatMaster::createEthercatBus(){
 
 bool EthercatMaster::attachDevice(EthercatDevice::SharedPtr device){
   if (deviceExists(device->getName())){
-    MELO_ERROR_STREAM("Cannot attach device with name '" << device->getName()
+    MELO_ERROR_STREAM(bus_->get_logger(), "Cannot attach device with name '" << device->getName()
                       << "' because it already exists.");
     return false;
   }
@@ -51,7 +51,7 @@ bool EthercatMaster::attachDevice(EthercatDevice::SharedPtr device){
   device->setEthercatBusBasePointer(bus_.get());
   device->setTimeStep(configuration_.timeStep);
   devices_.push_back(device);
-  MELO_DEBUG_STREAM("Attached device '"
+  MELO_DEBUG_STREAM(bus_->get_logger(), "Attached device '"
                     << device->getName()
                     << "' to address "
                     << device->getAddress());
@@ -66,13 +66,13 @@ bool EthercatMaster::startup(){
   for(const auto & device : devices_)
   {
     if(!bus_->waitForState(EC_STATE_SAFE_OP, device->getAddress(), 50, 0.05))
-      MELO_ERROR("not in safe op after satrtup!");
+      MELO_ERROR(bus_->get_logger(), "not in safe op after satrtup!");
     bus_->setState(EC_STATE_OPERATIONAL, device->getAddress());
     success &= bus_->waitForState(EC_STATE_OPERATIONAL, device->getAddress(), 50, 0.05);
   }
 
   if(!success)
-    MELO_ERROR("[ethercat_sdk_master:EthercatMaster::startup] Startup not successful.");
+    MELO_ERROR(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::startup] Startup not successful.");
   return success;
 }
 
@@ -123,7 +123,7 @@ bool EthercatMaster::setRealtimePriority(int priority){
   param.sched_priority = priority;
   int errorFlag = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
   if(errorFlag != 0){
-    MELO_ERROR_STREAM("[ethercat_sdk_master:EthercatMaster::setRealtimePriority]"
+    MELO_ERROR_STREAM(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::setRealtimePriority]"
                       << " Could not set thread priority. Check limits.conf or"
                       << " execute as root");
     return false;
@@ -196,7 +196,7 @@ void EthercatMaster::createUpdateHeartbeat(bool enforceRate){
     // we need to sleep a bit
     if(timespecSmallerThan(&now, &lastWakeup_)){
       if(rateTooLowCounter_ >= configuration_.updateRateTooLowWarnThreshold){
-        MELO_WARN("[ethercat_sdk_master:EthercatMaster::createUpdateHeartbeat]: update rate too low.");
+        MELO_WARN(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::createUpdateHeartbeat]: update rate too low.");
       }
       highPrecisionSleep(lastWakeup_);
       clock_gettime(CLOCK_MONOTONIC, &lastWakeup_);
@@ -204,7 +204,7 @@ void EthercatMaster::createUpdateHeartbeat(bool enforceRate){
     // We do not violate the minimum time step
     } else {
       if(rateTooLowCounter_ >= configuration_.updateRateTooLowWarnThreshold){
-        MELO_WARN("[ethercat_sdk_master:EthercatMaster::createUpdateHeartbeat]: update rate too low.");
+        MELO_WARN(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::createUpdateHeartbeat]: update rate too low.");
       }
       clock_gettime(CLOCK_MONOTONIC, &lastWakeup_);
     }

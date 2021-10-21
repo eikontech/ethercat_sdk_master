@@ -47,10 +47,12 @@ bool EthercatMaster::attachDevice(EthercatDevice::SharedPtr device){
                       << "' because it already exists.");
     return false;
   }
+
   bus_->addSlave(device);
   device->setEthercatBusBasePointer(bus_.get());
   device->setTimeStep(configuration_.timeStep);
   devices_.push_back(device);
+
   MELO_DEBUG_STREAM(bus_->get_logger(), "Attached device '"
                     << device->getName()
                     << "' to address "
@@ -62,11 +64,11 @@ bool EthercatMaster::startup(){
   bool success = true;
 
   success &= bus_->startup(false);
-
   for(const auto & device : devices_)
   {
     if(!bus_->waitForState(EC_STATE_SAFE_OP, device->getAddress(), 50, 0.05))
-      MELO_ERROR(bus_->get_logger(), "not in safe op after satrtup!");
+      MELO_ERROR(bus_->get_logger(), "not in safe op after startup!");
+    
     bus_->setState(EC_STATE_OPERATIONAL, device->getAddress());
     success &= bus_->waitForState(EC_STATE_OPERATIONAL, device->getAddress(), 50, 0.05);
   }

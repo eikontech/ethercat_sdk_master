@@ -57,8 +57,6 @@ endif()
 ## Enable all compiler warnings and treat them as errors.
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-set(CATKIN_PACKAGE_DEPENDENCIES soem_interface)
-
 find_package(Threads)
 
 ###################################
@@ -72,6 +70,9 @@ find_package(Threads)
 add_library(${PROJECT_NAME} 
   src/${PROJECT_NAME}/EthercatMaster.cpp
   src/${PROJECT_NAME}/EthercatDevice.cpp)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 ament_target_dependencies(${PROJECT_NAME} rclcpp)
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${YAML_CPP_LIBRARIES}
   Threads::Threads)

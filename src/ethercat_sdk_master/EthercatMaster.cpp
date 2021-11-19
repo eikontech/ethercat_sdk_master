@@ -154,7 +154,7 @@ bool EthercatMaster::setRealtimePriority(int priority, int cpu_core) const{
       //check if the core is < than the number of available cpus
       if(cpu_core >= number_of_cpus)
       {
-          MELO_ERROR_STREAM("[ethercat_sdk_master:EthercatMaster::setRealtimePriority]" <<
+          MELO_ERROR_STREAM(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::setRealtimePriority]" <<
                             "Tried to attach thread to core: " << cpu_core << " even though we only have: " << number_of_cpus  << " core!");
           return false;
       }
@@ -164,7 +164,7 @@ bool EthercatMaster::setRealtimePriority(int priority, int cpu_core) const{
       errorFlag = pthread_setaffinity_np(thread, sizeof(cpuset), &cpuset);
       if(errorFlag != 0)
       {
-          MELO_ERROR_STREAM("[ethercat_sdk_master:EthercatMaster::setRealtimePriority]" <<
+          MELO_ERROR_STREAM(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::setRealtimePriority]" <<
                           "Could not assign ethercat thread to single cpu core: "
                             << errorFlag);
           success &= false;

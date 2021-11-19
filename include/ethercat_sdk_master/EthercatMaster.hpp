@@ -88,7 +88,6 @@ public:
    * Call preShutdown() of every attached device.
    * This function needs to be executed outside of the communication update thread.
    * PDO communication needs to continue until this funtion returns.
-   * @see https://bitbucket.org/leggedrobotics/ethercat_device_configurator/src/master/src/standalone.cpp
    */
   void preShutdown();
 
@@ -96,6 +95,11 @@ public:
    * Returns a raw pointer to the bus_ object.
    */
   soem_interface::EthercatBusBase* getBusPtr() { return bus_.get(); }
+
+  /*!
+   * Check EtherCAT Network state.
+   */
+  void ecatCheck();
 
 
 // Configuration

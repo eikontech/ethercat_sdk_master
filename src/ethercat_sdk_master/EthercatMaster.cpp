@@ -20,6 +20,7 @@
 
 #define SLEEP_EARLY_STOP_NS (50000) // less than 1e9 - 1!!
 #define BILLION (1000000000)
+#define NSEC_PER_SEC 1000000000
 
 namespace ecat_master{
 
@@ -62,20 +63,25 @@ bool EthercatMaster::attachDevice(EthercatDevice::SharedPtr device){
 
 bool EthercatMaster::startup(){
   bool success = true;
-
   success &= bus_->startup(false);
-  for(const auto & device : devices_)
-  {
-    if(!bus_->waitForState(EC_STATE_SAFE_OP, device->getAddress(), 50, 0.05))
-      MELO_ERROR(bus_->get_logger(), "not in safe op after startup!");
-    
-    bus_->setState(EC_STATE_OPERATIONAL, device->getAddress());
-    success &= bus_->waitForState(EC_STATE_OPERATIONAL, device->getAddress(), 50, 0.05);
-  }
+  if(success)
+    for(const auto & device : devices_)
+    {
+      if(!bus_->waitForState(EC_STATE_SAFE_OP, device->getAddress(), 50, 0.05))
+        MELO_ERROR(bus_->get_logger(), "not in safe op after startup!");
+      
+      bus_->setState(EC_STATE_OPERATIONAL, device->getAddress());
+      success &= bus_->waitForState(EC_STATE_OPERATIONAL, device->getAddress(), 50, 0.05);
+    }
 
   if(!success)
     MELO_ERROR(bus_->get_logger(), "[ethercat_sdk_master:EthercatMaster::startup] Startup not successful.");
   return success;
+}
+
+void EthercatMaster::ecatCheck()
+{
+  bus_->ecatCheck();
 }
 
 void EthercatMaster::update(UpdateMode updateMode){
@@ -170,6 +176,22 @@ inline void addNsecsToTimespec(timespec *ts, long int ns){
   }
 }
 
+inline void add_timespec(timespec *ts, long int addtime)
+{
+   long int sec, nsec;
+
+   nsec = addtime % NSEC_PER_SEC;
+   sec = (addtime - nsec) / NSEC_PER_SEC;
+   ts->tv_sec += sec;
+   ts->tv_nsec += nsec;
+   if (ts->tv_nsec > NSEC_PER_SEC)
+   {
+      nsec = ts->tv_nsec % NSEC_PER_SEC;
+      ts->tv_sec += (ts->tv_nsec - nsec) / NSEC_PER_SEC;
+      ts->tv_nsec = nsec;
+   }
+}
+
 inline long int getTimeDiffNs(timespec t_end, timespec t_start){
   return BILLION*(t_end.tv_sec - t_start.tv_sec) + t_end.tv_nsec - t_start.tv_nsec;
 }
@@ -179,11 +201,13 @@ void EthercatMaster::createUpdateHeartbeat(bool enforceRate){
     // since we do sleep in absolute times keeping the rate constant is trivial:
     // we simply increment the target sleep wakeup time by the timestep in every
     // iteration.
-    addNsecsToTimespec(&sleepEnd_, timestepNs_);
+    // addNsecsToTimespec(&sleepEnd_, timestepNs_);
+    add_timespec(&sleepEnd_, timestepNs_);
   } else {
     // sleep until timeStepNs_ nanoseconds from last wakeup time
     sleepEnd_ = lastWakeup_;
-    addNsecsToTimespec(&sleepEnd_, timestepNs_);
+    // addNsecsToTimespec(&sleepEnd_, timestepNs_);
+    add_timespec(&sleepEnd_, timestepNs_);
   }
 
   timespec now;

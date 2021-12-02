@@ -241,7 +241,7 @@ void EthercatMaster::createUpdateHeartbeat(bool enforceRate){
   } else {
     // sleep until timeStepNs_ nanoseconds from last wakeup time
     sleepEnd_ = lastWakeup_;
-    // addNsecsToTimespec(&sleepEnd_, timestepNs_);
+    //addNsecsToTimespec(&sleepEnd_, timestepNs_);
     add_timespec(&sleepEnd_, timestepNs_);
   }
 

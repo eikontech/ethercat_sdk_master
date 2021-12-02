@@ -75,6 +75,12 @@ public:
    */
   virtual void setName(const std::string& name) {name_ = name;}
 
+  /*!
+   * Return the initial position in radians of this device.
+   */
+  virtual double getInitialPosition_rad() {return 0.;}
+
+  virtual double getProfileVelocity_radPerSec() {return 0.1;}
 
 public:
 

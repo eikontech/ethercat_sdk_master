@@ -81,7 +81,7 @@ public:
   virtual double getInitialPosition_rad() {return 0.;}
   virtual double getPositionLimits_rad() {return 6.28;};
 
-  virtual double getProfileVelocity_radPerSec() {return 0.1;}
+  virtual double getMaxVelocity_radPerSec() {return 0.1;}
 
   virtual double getProfileAcceleration_radPerSec2() {return 0.1;}
   
